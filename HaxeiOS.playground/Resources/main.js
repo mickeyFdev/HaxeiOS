@@ -2,12 +2,23 @@
 (function ($global) { "use strict";
 class Main {
 	static main() {
-		let values = [1,2,3,4,5];
-		let total = 0;
-		let _g = 0;
-		while(_g < values.length) total += values[_g++];
-		console.log("src/Main.hx:14:","Haxe" + " is running in " + "iOS Swift Playground");
-		console.log("src/Main.hx:15:","sum(1...5) = " + total);
+		let stage = new openfl_display_Stage(640,420);
+		let card = new openfl_display_Sprite();
+		card.x = 56;
+		card.y = 52;
+		card.graphics.beginFill(5032842);
+		card.graphics.drawRect(0,0,300,180);
+		card.graphics.endFill();
+		stage.addChild(card);
+		let dot = new openfl_display_Sprite();
+		dot.x = 430;
+		dot.y = 170;
+		dot.graphics.beginFill(16103746);
+		dot.graphics.drawCircle(0,0,64);
+		dot.graphics.endFill();
+		stage.addChild(dot);
+		__swiftRender(stage.commands);
+		console.log("src/Main.hx:26:","OpenFL-compatible drawing commands sent to Swift");
 	}
 }
 class haxe_iterators_ArrayIterator {
@@ -20,6 +31,50 @@ class haxe_iterators_ArrayIterator {
 	}
 	next() {
 		return this.array[this.current++];
+	}
+}
+class openfl_display_Graphics {
+	constructor(owner) {
+		this.owner = owner;
+	}
+	clear() {
+		this.owner.commands = [];
+	}
+	beginFill(color,alpha) {
+		if(alpha == null) {
+			alpha = 1.0;
+		}
+		this.owner.fillColor = color;
+		this.owner.fillAlpha = alpha;
+	}
+	endFill() {
+	}
+	drawRect(x,y,width,height) {
+		this.owner.commands.push({ kind : "rect", x : x, y : y, width : width, height : height});
+	}
+	drawCircle(x,y,radius) {
+		this.owner.commands.push({ kind : "circle", x : x, y : y, radius : radius});
+	}
+}
+class openfl_display_Sprite {
+	constructor() {
+		this.commands = [];
+		this.fillAlpha = 1.0;
+		this.fillColor = 16777215;
+		this.y = 0;
+		this.x = 0;
+		this.graphics = new openfl_display_Graphics(this);
+	}
+}
+class openfl_display_Stage extends openfl_display_Sprite {
+	constructor(width,height) {
+		super();
+		this.stageWidth = width;
+		this.stageHeight = height;
+	}
+	addChild(child) {
+		this.commands.push({ kind : "child", x : child.x, y : child.y, color : child.fillColor, alpha : child.fillAlpha, commands : child.commands});
+		return child;
 	}
 }
 {

@@ -6,6 +6,7 @@ HaxeコードをJavaScriptへ事前コンパイルし、iOSのSwift Playground�
 
 - VSCode風のファイルエクスプローラー、タブ、エディター、ターミナル出力
 - `Main.hx`の編集と、生成済みHaxe JavaScriptの`Run`実行
+- OpenFL互換の最小描画API（`Stage`、`Sprite`、`Graphics`）で矩形・円を描画
 - Haxeの純粋な言語機能と、JavaScriptへ変換できるHaxeライブラリの利用
 - Swift側からJavaScriptCoreへ安全なネイティブ関数を公開する拡張
 
@@ -15,11 +16,14 @@ HaxeコードをJavaScriptへ事前コンパイルし、iOSのSwift Playground�
 
 OpenFL、Lime、HaxeFlixelを含む「Haxe関連の物を全部」無変更でiOS Playground内で動かすことはできません。これらは通常、C++/Objective-C、UIKit、Metal、OpenGL、ファイルシステム、スレッド、またはブラウザーのDOM/Canvasを必要とするためです。対応の目安は次のとおりです。
 
+この制約を減らす第一歩として、リポジトリには`haxe/src/openfl/display`の小さな互換レイヤーを追加しています。Haxe側の`Stage`/`Sprite`/`Graphics`が描画命令を生成し、Swift側の`OpenFLCanvasView`がUIKitで矩形と円を描画します。これは本家OpenFLの置き換えではなく、同じ書き味で機能を段階的に増やすための実装です。
+
 | ライブラリ | この構成での対応 | 理由 |
 | --- | --- | --- |
 | Haxe標準の純粋コード | 対応 | JavaScriptへ変換できる |
 | HaxeのJS向けライブラリ | 条件付き対応 | JavaScriptCoreが提供するAPIの範囲内 |
-| OpenFL | 原則非対応 | HTML5版はDOM/Canvas、iOS版はネイティブビルドが必要 |
+| OpenFL互換サブセット（Stage/Sprite/Graphics） | 対応開始 | Swiftブリッジで矩形・円を描画 |
+| OpenFL本体 | 原則非対応 | HTML5版はDOM/Canvas、iOS版はネイティブビルドが必要 |
 | Lime | 原則非対応 | ネイティブウィンドウ・GPU・入力などのバックエンドが必要 |
 | HaxeFlixel | 原則非対応 | OpenFL/Limeと描画・入力バックエンドに依存 |
 | OpenFL/Lime/Flixelの事前生成JS | 大規模な移植が必要 | DOM/CanvasをJavaScriptCore向けに置き換える必要がある |
