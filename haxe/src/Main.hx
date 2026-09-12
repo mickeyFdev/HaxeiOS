@@ -1,29 +1,25 @@
 package;
 
-import openfl.display.Sprite;
-import openfl.display.Stage;
-import js.Syntax;
+import flixel.FlxGame;
+import flixel.FlxSprite;
+import flixel.FlxState;
+import lime.app.Application;
 
 class Main {
     static function main() {
-        var stage = new Stage(640, 420);
-        var card = new Sprite();
-        card.x = 56;
-        card.y = 52;
-        card.graphics.beginFill(0x4CCB8A);
-        card.graphics.drawRect(0, 0, 300, 180);
-        card.graphics.endFill();
-        stage.addChild(card);
+        var limeApp = new Application();
+        limeApp.create(640, 420);
 
-        var dot = new Sprite();
-        dot.x = 430;
-        dot.y = 170;
-        dot.graphics.beginFill(0xF5B942);
-        dot.graphics.drawCircle(0, 0, 64);
-        dot.graphics.endFill();
-        stage.addChild(dot);
+        var state = new FlxState();
+        var player = new FlxSprite(56, 52, 0x4CCB8A);
+        player.velocityX = 48;
+        state.add(player);
 
-        Syntax.code("__swiftRender({0})", stage.commands);
-        trace("OpenFL-compatible drawing commands sent to Swift");
+        var enemy = new FlxSprite(430, 170, 0xF5B942);
+        state.add(enemy);
+
+        var game = new FlxGame(640, 420, state);
+        game.step(1.0 / 60.0);
+        trace("Lime + HaxeFlixel-compatible game loop is running");
     }
 }

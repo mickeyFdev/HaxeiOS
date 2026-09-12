@@ -45,23 +45,22 @@ final class OpenFLCanvasView: UIView {
     override func draw(_ rect: CGRect) {
         UIColor(red: 0.035, green: 0.043, blue: 0.055, alpha: 1).setFill()
         UIRectFill(rect)
-        for child in commands {
-            let offsetX = number(child["x"])
-            let offsetY = number(child["y"])
-            let color = uiColor(child["color"])
-            color.withAlphaComponent(CGFloat(number(child["alpha"], fallback: 1))).setFill()
-            guard let shapes = child["commands"] as? [[String: Any]] else { continue }
-            for shape in shapes {
-                switch shape["kind"] as? String {
-                case "rect":
-                    let frame = CGRect(x: offsetX + number(shape["x"]), y: offsetY + number(shape["y"]), width: number(shape["width"]), height: number(shape["height"]))
-                    UIBezierPath(roundedRect: frame, cornerRadius: 10).fill()
-                case "circle":
-                    let radius = number(shape["radius"])
-                    let center = CGPoint(x: offsetX + number(shape["x"]), y: offsetY + number(shape["y"]))
-                    UIBezierPath(arcCenter: center, radius: radius, startAngle: 0, endAngle: .pi * 2, clockwise: true).fill()
-                default: break
-                }
+        renderNodes(commands, offsetX: 0, offsetY: 0)
+    }
+
+    private func renderNodes(_ nodes: [[String: Any]], offsetX: CGFloat, offsetY: CGFloat) {
+        for node in nodes {
+            let x = offsetX + number(node["x"])
+            let y = offsetY + number(node["y"])
+            if node["kind"] as? String == "child", let children = node["commands"] as? [[String: Any]] {
+                renderNodes(children, offsetX: x, offsetY: y)
+            } else if node["kind"] as? String == "rect" {
+                uiColor(node["color"]).withAlphaComponent(number(node["alpha"], fallback: 1)).setFill()
+                UIBezierPath(roundedRect: CGRect(x: x, y: y, width: number(node["width"]), height: number(node["height"])), cornerRadius: 10).fill()
+            } else if node["kind"] as? String == "circle" {
+                uiColor(node["color"]).withAlphaComponent(number(node["alpha"], fallback: 1)).setFill()
+                let radius = number(node["radius"])
+                UIBezierPath(arcCenter: CGPoint(x: x, y: y), radius: radius, startAngle: 0, endAngle: .pi * 2, clockwise: true).fill()
             }
         }
     }
@@ -84,7 +83,7 @@ final class IDEViewController: UIViewController, UITextViewDelegate {
     private let status = UILabel()
     private let runtime = HaxeRuntime()
 
-    private let source = """package;\n\nimport openfl.display.Sprite;\nimport openfl.display.Stage;\n\nclass Main {\n    static function main() {\n        var stage = new Stage(640, 420);\n        var card = new Sprite();\n        card.x = 56;\n        card.y = 52;\n        card.graphics.beginFill(0x4CCB8A);\n        card.graphics.drawRect(0, 0, 300, 180);\n        stage.addChild(card);\n        trace(\"OpenFL-compatible drawing\");\n    }\n}\n"""
+    private let source = """package;\n\nimport flixel.FlxGame;\nimport flixel.FlxSprite;\nimport flixel.FlxState;\nimport lime.app.Application;\n\nclass Main {\n    static function main() {\n        var app = new Application();\n        app.create(640, 420);\n        var state = new FlxState();\n        var player = new FlxSprite(56, 52, 0x4CCB8A);\n        player.velocityX = 48;\n        state.add(player);\n        var game = new FlxGame(640, 420, state);\n        game.step(1.0 / 60.0);\n    }\n}\n"""
 
     override func loadView() {
         view = UIView()
