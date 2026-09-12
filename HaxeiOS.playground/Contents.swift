@@ -84,7 +84,7 @@ final class IDEViewController: UIViewController, UITextViewDelegate {
     private let status = UILabel()
     private let runtime = HaxeRuntime()
 
-    private let source = """package;\n\nclass Main {\n    static function main() {\n        trace(\"Hello from Haxe\");\n    }\n}\n"""
+    private let source = """package;\n\nimport openfl.display.Sprite;\nimport openfl.display.Stage;\n\nclass Main {\n    static function main() {\n        var stage = new Stage(640, 420);\n        var card = new Sprite();\n        card.x = 56;\n        card.y = 52;\n        card.graphics.beginFill(0x4CCB8A);\n        card.graphics.drawRect(0, 0, 300, 180);\n        stage.addChild(card);\n        trace(\"OpenFL-compatible drawing\");\n    }\n}\n"""
 
     override func loadView() {
         view = UIView()
